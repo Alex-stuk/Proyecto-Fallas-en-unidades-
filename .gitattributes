@@ -1,2 +1,48 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+public class DataInserter {
+
+    private static final String URL = "jdbc:sqlite:sample_database.db";
+
+    public static void main(String[] args) {
+        createTable();
+        insertData("Producto1", 100, 29.99);
+        insertData("Producto2", 50, 19.99);
+        insertData("Producto3", 200, 9.99);
+    }
+
+    public static void createTable() {
+        String sql = "CREATE TABLE IF NOT EXISTS products (\n"
+                + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+                + " name TEXT NOT NULL,\n"
+                + " quantity INTEGER NOT NULL,\n"
+                + " price REAL NOT NULL\n"
+                + ");";
+
+        try (Connection conn = DriverManager.getConnection(URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.execute();
+            System.out.println("Tabla de productos creada o ya existe.");
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public static void insertData(String name, int quantity, double price) {
+        String sql = "INSERT INTO products(name, quantity, price) VALUES(?, ?, ?)";
+
+        try (Connection conn = DriverManager.getConnection(URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, name);
+            pstmt.setInt(2, quantity);
+            pstmt.setDouble(3, price);
+            pstmt.executeUpdate();
+            System.out.println("Datos insertados exitosamente.");
+        } catch (SQLException e) {
+            System.out.println("Error al insertar datos: " + e.getMessage());
+        }
+    }
+}
